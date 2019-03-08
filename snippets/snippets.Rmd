@@ -3,8 +3,10 @@ title: "Favorite code snippets"
 subtitle: "A responsibly sourced, artisanal list from the LCC"
 author: "Allie Kanik & David H. Montgomery"
 date: "3/6/2019"
-output: ioslides_presentation
-runtime: shiny
+output: 
+  ioslides_presentation: 
+    self_contained: yes
+    widescreen: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -37,6 +39,8 @@ Anyone who's ever written code probably done what I call the "archive shuffle":
 
 ## The LCC is here to help|Presenting our fledgling code snippet library
 
+http://bit.ly/lccsnippets
+
 ## Examples
 
 ## Demonstrations
@@ -47,16 +51,18 @@ One of the tasks I do regularly but have to look up almost every time I do it is
 
 I'm going to walk you through how to do it in R, and then show ways to do it in Python and Bash as well.
 
-### The basics
+## The basics
 
 This works if your CSVs all have the same structure: 
 
 ```{r eval = FALSE}
 library(tidyverse) # Load the Tidyverse package
-filenames <- dir(path = ".", pattern = ".csv", full.names = TRUE) # Store a list of the filepaths in question
-combined_data <- map(filenames, read_csv) %>% # Apply `read_csv()` to every item in `filenames` (our CSVs)
+# Store a list of the filepaths in question
+filenames <- dir(path = ".", pattern = ".csv", full.names = TRUE) 
+# Apply `read_csv()` to every item in `filenames`
+combined_data <- map(filenames, read_csv) %>% 
 	reduce(rbind) # And combine them into one speadsheet
-write_csv(combined_data, "combined_data.csv") # Optionally, re-export back to CSV. Otherwise analyze in R.
+write_csv(combined_data, "combined_data.csv") # Optionally, re-export back to CSV.
 ```
 
 ## Getting more complicated
@@ -67,7 +73,8 @@ For example, if we need to skip the first three lines of each CSV:
 
 ```{r eval = FALSE}
 filenames <- dir(path = ".", pattern = ".csv", full.names = TRUE) 
-combined_data <- map(filenames, read_csv, skip = 3) %>% # Append arguments at the end, separated by comma
+# Append arguments to `map()` at the end, separated by commas
+combined_data <- map(filenames, read_csv, skip = 3) %>% 
 	reduce(rbind) 
 write_csv(combined_data, "combined_data.csv") 
 ```
@@ -76,11 +83,13 @@ Alternately: ` map(filenames, ~ read_csv(.x, skip = 3))`
 
 ## What if they're not CSVs?
 
+You can `map()` other functions, like `readxl::read_excel()`.
+
 ```{r eval = FALSE}
 filenames <- dir(path = ".", pattern = ".csv", full.names = TRUE) 
-combined_data <- map(filenames, readxl::read_excel) %>% # Substitute read_excel for read_csv
+combined_data <- map(filenames, readxl::read_excel) %>% 
 	reduce(rbind)
-write_csv(combined_data, "combined_data.csv") # Output in whatever format you want
+write_csv(combined_data, "combined_data.csv")
 ```
 
 ## What if we want to change our CSVs?
@@ -89,11 +98,12 @@ A common goal I have, when merging CSVs, is to make a note in the merged spreads
 
 ```{r eval = FALSE}
 filenames <- dir(path = ".", pattern = ".csv", full.names = TRUE) 
-short_filenames <- dir(path = ".", pattern = ".csv") # Store short versions of our filenames
-combined_data <- map2(.x = filenames, .y = short_filenames, # Pass both our vectors to `map()`
-					  ~read_csv(.x) %>% mutate(filename = .y)) %>% # Read in from `filenames` and use `short_filenames` to edit.
-	reduce(rbind) 
-write_csv(combined_data, "combined_data.csv") 
+short_filenames <- dir(path = ".", pattern = ".csv") # Store short forms of filenames
+# Pass both our vectors to `map()`
+combined_data <- map2(.x = filenames, .y = short_filenames, 
+# Read in from `filenames` and use `short_filenames` to edit.
+					  ~read_csv(.x) %>% mutate(filename = .y)) %>% 
+	reduce(rbind)
 ```
 
 This follows the general Tidyverse and R rules. You could apply `str_remove_all()` to `.y`, for example, if you wanted to remove ".csv" from them. 
@@ -148,5 +158,10 @@ frame.to_csv(csv_dir + 'all-csv-files.csv')
 ## The csvkit way
 
 ```{bash eval = FALSE}
-$ csvstack -g 2009,2010 examples/realdata/FY09_EDU_Recipients_by_State.csv examples/realdata/Datagov_FY10_EDU_recp_by_State.csv
+$ csvstack -g 2009,2010 examples/realdata/FY09_EDU_Recipients_by_State.csv\
+> examples/realdata/Datagov_FY10_EDU_recp_by_State.csv
 ```
+
+## Let's collaborate!
+
+This is a crowdsourced project. Please share your feedback, and your thoughts for tasks that you do over and over again and wish you had a "snippet" for.

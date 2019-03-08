@@ -3103,7 +3103,7 @@ if (document.readyState !== "loading" &&
 
 <body style="opacity: 0">
 
-<slides>
+<slides class="layout-widescreen">
 
   <slide class="title-slide segue nobackground">
         <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
@@ -3147,6 +3147,8 @@ if (document.readyState !== "loading" &&
 
 </article></slide><slide class=""><hgroup><h2>The LCC is here to help</h2><h3>Presenting our fledgling code snippet library</h3></hgroup><article  id="the-lcc-is-here-to-helppresenting-our-fledgling-code-snippet-library">
 
+<p><a href='http://bit.ly/lccsnippets' title=''>http://bit.ly/lccsnippets</a></p>
+
 </article></slide><slide class=""><hgroup><h2>Examples</h2></hgroup><article  id="examples">
 
 </article></slide><slide class=""><hgroup><h2>Demonstrations</h2></hgroup><article  id="demonstrations">
@@ -3157,15 +3159,17 @@ if (document.readyState !== "loading" &&
 
 <p>I’m going to walk you through how to do it in R, and then show ways to do it in Python and Bash as well.</p>
 
-<h3>The basics</h3>
+</article></slide><slide class=""><hgroup><h2>The basics</h2></hgroup><article  id="the-basics">
 
 <p>This works if your CSVs all have the same structure:</p>
 
 <pre class = 'prettyprint lang-r'>library(tidyverse) # Load the Tidyverse package
-filenames &lt;- dir(path = &quot;.&quot;, pattern = &quot;.csv&quot;, full.names = TRUE) # Store a list of the filepaths in question
-combined_data &lt;- map(filenames, read_csv) %&gt;% # Apply `read_csv()` to every item in `filenames` (our CSVs)
+# Store a list of the filepaths in question
+filenames &lt;- dir(path = &quot;.&quot;, pattern = &quot;.csv&quot;, full.names = TRUE) 
+# Apply `read_csv()` to every item in `filenames`
+combined_data &lt;- map(filenames, read_csv) %&gt;% 
     reduce(rbind) # And combine them into one speadsheet
-write_csv(combined_data, &quot;combined_data.csv&quot;) # Optionally, re-export back to CSV. Otherwise analyze in R.</pre>
+write_csv(combined_data, &quot;combined_data.csv&quot;) # Optionally, re-export back to CSV.</pre>
 
 </article></slide><slide class=""><hgroup><h2>Getting more complicated</h2></hgroup><article  id="getting-more-complicated">
 
@@ -3174,7 +3178,8 @@ write_csv(combined_data, &quot;combined_data.csv&quot;) # Optionally, re-export 
 <p>For example, if we need to skip the first three lines of each CSV:</p>
 
 <pre class = 'prettyprint lang-r'>filenames &lt;- dir(path = &quot;.&quot;, pattern = &quot;.csv&quot;, full.names = TRUE) 
-combined_data &lt;- map(filenames, read_csv, skip = 3) %&gt;% # Append arguments at the end, separated by comma
+# Append arguments to `map()` at the end, separated by commas
+combined_data &lt;- map(filenames, read_csv, skip = 3) %&gt;% 
     reduce(rbind) 
 write_csv(combined_data, &quot;combined_data.csv&quot;) </pre>
 
@@ -3182,21 +3187,24 @@ write_csv(combined_data, &quot;combined_data.csv&quot;) </pre>
 
 </article></slide><slide class=""><hgroup><h2>What if they’re not CSVs?</h2></hgroup><article  id="what-if-theyre-not-csvs">
 
+<p>You can <code>map()</code> other functions, like <code>readxl::read_excel()</code>.</p>
+
 <pre class = 'prettyprint lang-r'>filenames &lt;- dir(path = &quot;.&quot;, pattern = &quot;.csv&quot;, full.names = TRUE) 
-combined_data &lt;- map(filenames, readxl::read_excel) %&gt;% # Substitute read_excel for read_csv
+combined_data &lt;- map(filenames, readxl::read_excel) %&gt;% 
     reduce(rbind)
-write_csv(combined_data, &quot;combined_data.csv&quot;) # Output in whatever format you want</pre>
+write_csv(combined_data, &quot;combined_data.csv&quot;)</pre>
 
 </article></slide><slide class=""><hgroup><h2>What if we want to change our CSVs?</h2></hgroup><article  id="what-if-we-want-to-change-our-csvs">
 
 <p>A common goal I have, when merging CSVs, is to make a note in the merged spreadsheet of which CSV each row of data originally came from. This is especially the case where, say, the names of the CSVs contain valuable data in and of themselves, like a date that the report was generated.</p>
 
 <pre class = 'prettyprint lang-r'>filenames &lt;- dir(path = &quot;.&quot;, pattern = &quot;.csv&quot;, full.names = TRUE) 
-short_filenames &lt;- dir(path = &quot;.&quot;, pattern = &quot;.csv&quot;) # Store short versions of our filenames
-combined_data &lt;- map2(.x = filenames, .y = short_filenames, # Pass both our vectors to `map()`
-                      ~read_csv(.x) %&gt;% mutate(filename = .y)) %&gt;% # Read in from `filenames` and use `short_filenames` to edit.
-    reduce(rbind) 
-write_csv(combined_data, &quot;combined_data.csv&quot;) </pre>
+short_filenames &lt;- dir(path = &quot;.&quot;, pattern = &quot;.csv&quot;) # Store short forms of filenames
+# Pass both our vectors to `map()`
+combined_data &lt;- map2(.x = filenames, .y = short_filenames, 
+# Read in from `filenames` and use `short_filenames` to edit.
+                      ~read_csv(.x) %&gt;% mutate(filename = .y)) %&gt;% 
+    reduce(rbind)</pre>
 
 <p>This follows the general Tidyverse and R rules. You could apply <code>str_remove_all()</code> to <code>.y</code>, for example, if you wanted to remove &ldquo;.csv&rdquo; from them.</p>
 
@@ -3245,7 +3253,12 @@ frame.to_csv(csv_dir + &#39;all-csv-files.csv&#39;)</pre>
 
 </article></slide><slide class=""><hgroup><h2>The csvkit way</h2></hgroup><article  id="the-csvkit-way">
 
-<pre class = 'prettyprint lang-bash'>$ csvstack -g 2009,2010 examples/realdata/FY09_EDU_Recipients_by_State.csv examples/realdata/Datagov_FY10_EDU_recp_by_State.csv</pre></article></slide>
+<pre class = 'prettyprint lang-bash'>$ csvstack -g 2009,2010 examples/realdata/FY09_EDU_Recipients_by_State.csv\
+&gt; examples/realdata/Datagov_FY10_EDU_recp_by_State.csv</pre>
+
+</article></slide><slide class=""><hgroup><h2>Let’s collaborate!</h2></hgroup><article  id="lets-collaborate">
+
+<p>This is a crowdsourced project. Please share your feedback, and your thoughts for tasks that you do over and over again and wish you had a &ldquo;snippet&rdquo; for.</p></article></slide>
 
 
   <slide class="backdrop"></slide>
