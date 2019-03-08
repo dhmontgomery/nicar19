@@ -1,0 +1,15 @@
+"0","ratings_clean <- ratings %>%
+	filter(Results != ""Canceled due to the MLB strike"") %>% # Remove the cancelled 1994 World Series
+	select(-`Avg.`) %>% # Drop average column
+	gather(key = ""game"", value = ""viewers"", 4:10) %>% # Reshape data
+	filter(viewers != ""No Game"") %>% # Remove ""No Game"" rows
+	mutate(viewers = str_remove_all(viewers, pattern = "" Mviewers\\"")) %>% # Remove text
+	mutate(viewers = str_remove_all(viewers, pattern = ""\\[[0-9]{1,2}\\]"")) %>% # Remove footnoted brackets with regex magic
+	separate(viewers, sep = ""/"", into = c(""rating"", ""share""), convert = TRUE) %>% # Separate on the ""/""
+	separate(share, sep = ""\\("", into = c(""share"", ""viewers""), convert = TRUE) %>% # Separate on the open parentheses
+	separate(viewers, sep = "" "", into = c(""viewers""), extra = ""drop"", convert = TRUE) %>% # Separate on the first space, dropping extras
+	separate(viewers, sep = ""\\–"", into = c(""viewers""), extra = ""drop"", convert = TRUE) # One year's rating was given as a range. Take the lower number
+"
+"2","Error in mutate_impl(.data, dots) : 
+  Evaluation error: Unrecognized backslash escape sequence in pattern. (U_REGEX_BAD_ESCAPE_SEQUENCE).
+"

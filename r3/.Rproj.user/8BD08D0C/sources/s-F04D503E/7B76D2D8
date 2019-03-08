@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1551916896633.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "7B76D2D8",
+    "lastKnownWriteTime" : 1551928786,
+    "last_content_update" : 1551928786828,
+    "path" : "~/GitHub/nicar19/snippets/snippets.Rpres",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "99,56",
+        "scrollLine" : "68"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_presentation"
+}

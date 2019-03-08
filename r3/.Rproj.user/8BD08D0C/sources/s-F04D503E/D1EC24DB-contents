@@ -1,0 +1,6 @@
+dir.create("test")
+data_frame("a" = runif(10), "b" = runif(10)) %>% write_csv("test/c.csv")
+dir("test")
+
+filelist <- dir("test", pattern = "csv", full.names = TRUE)
+map(filelist, read_csv, n_max = 5) %>% reduce(rbind)

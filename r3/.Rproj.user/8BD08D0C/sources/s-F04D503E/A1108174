@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1549595350895.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A1108174",
+    "lastKnownWriteTime" : 1551664538,
+    "last_content_update" : 1551664538292,
+    "path" : "~/GitHub/nicar19/r3/r3.Rmd",
+    "project_path" : "r3.Rmd",
+    "properties" : {
+        "cursorPosition" : "329,0",
+        "last_setup_crc32" : "F04D503E98f1c1b1",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
