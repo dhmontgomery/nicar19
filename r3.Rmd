@@ -59,7 +59,7 @@ It works like this:
 ssa <- read_csv("https://www.ssa.gov/disability/data/SSA-SA-FYWL.csv")
 ```
 
-```{r eval = FALSE}
+```{r eval = FALSE, include = FALSE}
 https://raw.githubusercontent.com/rdrr1990/bigKRLS/master/examples/data2016GE.csv
 ```
 
