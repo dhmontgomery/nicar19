@@ -1,6 +1,0 @@
-"0","	# set_names(""county"", ""registered_voters"") %>% 
-	mutate(registered_voters = str_remove_all(registered_voters, "",""))
-"
-"2","Error in stri_replace_all_regex(string, pattern, fix_replacement(replacement),  : 
-  object 'registered_voters' not found
-"
