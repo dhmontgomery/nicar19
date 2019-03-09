@@ -2,7 +2,7 @@
 title: 'R3: Gathering and cleaning data in R'
 author: "David H. Montgomery"
 date: "2/7/2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE, eval = TRUE}
@@ -13,14 +13,13 @@ library(stringr) # Tools for cleaning up text
 library(rvest) # Tools for scraping
 ```
 
-INTRO BLATHER
+In this lesson we're going to learn how to use R to download data directly from webpages — or "scrape" — and how to clean that inevitably messy data. You can work through this lesson simply by copying and pasting code, but some basic knowledge of R syntax and tidyverse syntax (such as the `%>%`) will make this a lot more useful. 
 
+Why scrape in R?
 
-Why scrape?
-
-- Sometimes it's the only way to get the data you want.
-- Sometimes you could get it other ways, but it's faster or less annoying to scrape it instead of copying and pasting or retyping. 
-- It's often better practice to make your script entirely self-contained and reproducible — you download your data in the script itself
+- Sometimes it's the **only** way to get data
+- Sometimes it's the **easiest** way to get data (much better than extensive copying and pasting)
+- Sometimes it's the **best** way to get the data (a reproducible workflow!)
 
 ## Getting started
 
@@ -32,7 +31,7 @@ Now, open up a new R Markdown document by going to `File -> New File -> R Markdo
 
 If you're not familiar with R Markdown, you'll get a popup window with a bunch of options. You can leave most of them as the defaults for now. Type your name under "Author" and whatever you want as the "Title" — you can always change it later. Click OK. You should see something like this:
 
-![](r3_2.png)
+![](images/r3_2.png)
 
 In R Markdown, you can write normal text using the [Markdown](https://en.wikipedia.org/wiki/Markdown) syntax that helps run Github, Reddit and lots of other parts of the Internet. You can also write code chunks that you can execute one by one. RStudio has pre-populated a document for you with some sample text and a few sample code chunks. 
 
@@ -138,6 +137,7 @@ Let's inspect this. It's not much use. So we keep going, using our XPath snippet
 ```{r}
 ratings <- read_html(url) %>%
 	html_nodes(xpath='//*[@id="mw-content-text"]/div/table[2]') # Point to the right table on the page via its xpath ID
+	# Note that the xpath contains qutation marks, so we use single quotes to create this string
 ```
 
 This looks a little more useful — we've now narrowed down our page to just our one particular section, the table. And we can see the HTML structure by looking at it. But we can't do anything with this... yet.
@@ -252,7 +252,7 @@ ratings_clean <- ratings %>%
 
 Here's what that means:
 
-![](regex-breakdown.png)
+![](images/regex-breakdown.png)
 
 (Note that most flavors of regex use a single backslash, `\`, to escape characters — that is, to tell regex that your brackets or parentheses or whatever in your code represent actual text, and not the functional use that those characters have in a regular expression. R, for whatever reason, uses two backslashes (`\\`) to escape characters.)
 
@@ -325,5 +325,88 @@ ggplot(ratings_clean, aes(Year, viewers)) +
 
 Now we can easily see some big trends: ratings have tended to go down over time, and later games in the Series tend to draw bigger ratings. (We can also see the huge ratings drawn by the greatest Game 7 of all time, 2016, not that I'm biased.)
 
+## Another example
+
+Minnesota's Secretary of State [posts current voter registration totals by county](https://www.sos.state.mn.us/election-administration-campaigns/data-maps/voter-registration-counts/) in an HTML table. Let's scrape it.
+
+Try and use the technique you used above to scrape this table. I'll show you the code to do so below.
+
 ## Power cleaning with `janitor`
 
+The `janitor` package has a lot of helpful functions for cleaning data:
+
+- `clean_names()` fixes weirdly formatted column names
+- `remove_empty()` can instantly remove all empty columns or empty rows from your spreadsheet, depending on the parameters you give it
+- `excel_numeric_to_date()` creates actual dates out Excel's numeric dates, like `42370`
+- `get_dupes()` produces a subset of duplicate rows that you can examine
+- `convert_to_NA()` converts strings you specify into actual `NA` values.
+
+## Returning to Minnesota
+
+```{r mn_scrape}
+url <- "http://www.sos.state.mn.us/election-administration-campaigns/data-maps/voter-registration-counts/" # Set the URL
+mnvoterreg <- url %>% # Start with the URL
+	read_html() %>% # Download the page's HTML
+	html_nodes(xpath='//*[@id="highlightSearchText"]/div/table') %>% # Get just the table we want, with its xpath
+	html_table(fill = TRUE) %>% # Convert to a table
+	`[[`(1) # Extract the data frame from the list created above
+```
+
+Now how would you clean that? 
+
+In this case, there's only one thing we need to do — the numbers here have commas, so we need to remove those and convert to numeric.
+
+```{r}
+mnvoterreg <- mnvoterreg %>% 
+	janitor::clean_names() %>% # If you don't have janitor installed, use the next line:
+	# set_names("county", "registered_voters") %>% 
+	mutate(registered_voters = str_remove_all(registered_voters, ",") %>% as.numeric())
+```
+
+I wrote a script using this that I would then pull into other projects — every time I needed to know the current number of registerd voters in a county for some graph, I'd just run `mnvoterreg.r` and it would instantly plop this data frame into my environment. 
+
+## Want a real challenge?
+
+Try [this Wikipedia table of all U.S. presidents](https://en.wikipedia.org/wiki/List_of_Presidents_of_the_United_States). Easy to scrape — but a huge pain to clean!
+
+The `xpath` is `//*[@id="mw-content-text"]/div/table[2]`. Have fun! 
+
+```{r pres, include = FALSE, eval = FALSE}
+url <- "https://en.wikipedia.org/wiki/List_of_Presidents_of_the_United_States"
+presidents <- read_html(url) %>%
+	html_nodes(xpath = '//*[@id="mw-content-text"]/div/table[2]') %>%
+	html_table(fill = TRUE, header = FALSE) %>%
+	`[[`(1)
+
+# Clean
+presidents1 <- presidents %>% 
+	set_names("order", "term", )
+	slice(-1:-2) # Remo
+```
+
+```{r include = FALSE, eval = FALSE}
+library(jsonlite)
+deaths <- data.frame()
+for(i in 2017:2018) { # Cycle through each year using Wikipedia's API
+    deathyear <- i
+    cont <- "page%7C27273d3757274107044b2f4133273703424b2f413327370427273d375727410122018f7e8f808f808f0a%7C9346268" # Store a unique field Wikipedia's API uses to move between blocs of responses when you query it.
+    deathscode <- expression(fromJSON(paste0("https://en.wikipedia.org/w/api.php?action=query&format=json&list=categorymembers&continue=-%7C%7C&cmtitle=Category%3A",deathyear,"_deaths&cmnamespace=0&cmlimit=max&cmcontinue=",cont))) # Generate the API query
+    deathsapi <- eval(deathscode) # Evaluate the API query
+    tmp <- deathsapi$query$categorymembers # Extract the result we want
+    while(!is.null(deathsapi$continue$cmcontinue)) { # Keep cycling until we run out of new responses
+        cont <- deathsapi$continue$cmcontinue # Store the new continuation variable
+        deathsapi <- eval(deathscode) # Evaluate the new API query with our new `cont` value.
+        tmp <- rbind( # Store it in a temporary dataframe.
+            tmp,
+            deathsapi$query$categorymembers)
+    }
+    tmp$year <- deathyear # Add a column marking the year.
+    deaths <- rbind(deaths,tmp) # Add the temporary data to the full data.
+} # Repeat the cycle
+#9:27 am
+deaths <- sample_n(deaths, 100)
+for(i in 1:nrow(deaths)) { # Cycle through the list of deaths
+    deaths$bytes[i] <- fromJSON(paste0("https://en.wikipedia.org//w/api.php?action=query&format=json&prop=revisions&rvprop=size&pageids=",deaths[i,1]))$query$pages[[1]][[4]] # Look up the article in the API from the page ID, take its length in bytes, and store it in a new 'bytes' column.
+}
+deaths$bytes <- as.numeric(deaths$bytes)
+```
