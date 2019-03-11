@@ -304,7 +304,6 @@ ratings_clean <- ratings %>%
 	mutate(viewers = str_remove_all(viewers, pattern = "\\[[0-9]{1,2}\\]")) %>% # Remove footnoted brackets with regex magic
 	separate(viewers, sep = "/", into = c("rating", "share"), convert = TRUE) %>% # Separate on the "/"
 	separate(share, sep = "\\(", into = c("share", "viewers"), convert = TRUE) %>% # Separate on the open parentheses
-	separate(viewers, sep = " ", into = c("viewers"), extra = "drop", convert = TRUE) %>% # Separate on the first space, dropping extras
 	separate(viewers, sep = "\\–", into = c("viewers"), extra = "drop", convert = TRUE) # One year's rating was given as a range. Take the lower number
 ```
 
@@ -403,8 +402,7 @@ for(i in 2017:2018) { # Cycle through each year using Wikipedia's API
     tmp$year <- deathyear # Add a column marking the year.
     deaths <- rbind(deaths,tmp) # Add the temporary data to the full data.
 } # Repeat the cycle
-#9:27 am
-deaths <- sample_n(deaths, 100)
+deaths <- sample_n(deaths, 100) # Sample the data otherwise it will take forever
 for(i in 1:nrow(deaths)) { # Cycle through the list of deaths
     deaths$bytes[i] <- fromJSON(paste0("https://en.wikipedia.org//w/api.php?action=query&format=json&prop=revisions&rvprop=size&pageids=",deaths[i,1]))$query$pages[[1]][[4]] # Look up the article in the API from the page ID, take its length in bytes, and store it in a new 'bytes' column.
 }
